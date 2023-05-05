@@ -1,0 +1,130 @@
+---
+title: "Ecosystem disturbance: Mapping biomass removal using FishMIP models"
+author: "Julia Blanchard"
+date: "5/06/2023"
+output:
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message=FALSE,code_folding=TRUE)
+```
+
+## FishMIP models
+
+FishMIP has produced an ensemble of global marine ecosystem models. We are currently working on standardised historical fishing runs, but our recent published results ([Tittensor et al. 2021](https://www.nature.com/articles/s41558-021-01173-9)) might provide some potentially useful insights that we could use as a testbed for Ray's point about ecosystem disturbance.
+
+| Note: For climate projections, we typically use at least 2 Earth System Models to analyse these models, here we use 1 - the GFDL model as we are just looking at the effect of fishing.
+
+But be aware there are large uncertainties across these models (as will be revealed below).
+
+```{r}
+#install.packages("ncdf4")
+#install.packages("terra")
+#install.packages("raster")
+#install.packages("sf")
+#install.packages("rgdal")
+library(ncdf4)
+library(raster)
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(terra)
+library(rgdal)
+```
+
+We have fished and unfished biomass for two models in FishMIP that have been published (Note: models with more realistic and standardised fishing are currently being run and are unpublished).
+
+We will calculate the removal index as 1 - biomass_fished/biomass_unfished, where biomass is all consumers in the system.
+
+## BOATS
+
+First let's start with BOATS, a size-structured model of marine ecosystems.
+
+```{r,code_folding=T,layout="l-body-outset"}
+# read in year index for the netcdf file
+Years<- read.csv("years.csv")[,2]
+filename<-"boats_gfdl-esm4_nobasd_historical_histsoc_default_tcb_global_monthly_1950_2014.nc"
+filename2<-"boats_gfdl-esm4_nobasd_historical_nat_default_tcb_global_monthly_1950_2014.nc"
+
+tcb_fished <- brick(file.path(filename))
+tcb_unfished <- brick(file.path(filename2))
+
+#subset  years from 2000 onwards
+
+# min(which(Years==2000))
+# max(which(Years==2014))
+
+tcb_fished<-subset(tcb_fished,601:780)
+tcb_unfished<-subset(tcb_unfished,601:780)
+
+
+#get mean
+
+mean_tcb_fished<-mean(tcb_fished)
+
+mean_tcb_unfished<-mean(tcb_unfished)
+
+biomass_ratio<-mean_tcb_fished/mean_tcb_unfished
+
+removal_index<-(1-biomass_ratio)
+
+plot(removal_index)
+
+```
+
+BOATS shows that there are actually quiet a lot of grid cells where the proportional reduction in biomass is not 1 but is fairly high - 0.8.
+
+## ECOOCEAN
+
+Now let's look at ECOOCEAN, this model has different functional groups considered in the ecosystem, not size structured - and I think Hilborn might have used this model in his example Christensen et al. but spatially aggregated? Need to check.
+
+```{r,code_folding=T}
+# read in year index for the netcdf file
+Years<- read.csv("years.csv")[,2]
+filename<-"ecoocean_gfdl-esm4_nobasd_historical_histsoc_default_tcb_global_monthly_1950_2014.nc"
+filename2<-"ecoocean_gfdl-esm4_nobasd_historical_nat_default_tcb_global_monthly_1950_2014.nc"
+
+tcb_fished <- brick(file.path(filename))
+tcb_unfished <- brick(file.path(filename2))
+
+#subset  years from 2000 onwards
+
+# min(which(Years==2000))
+# max(which(Years==2014))
+
+tcb_fished<-subset(tcb_fished,601:780)
+tcb_unfished<-subset(tcb_unfished,601:780)
+
+
+#get mean
+
+mean_tcb_fished<-mean(tcb_fished)
+
+mean_tcb_unfished<-mean(tcb_unfished)
+
+biomass_ratio<-mean_tcb_fished/mean_tcb_unfished
+
+removal_index<-(1-biomass_ratio)
+
+plot(removal_index)
+
+
+
+
+```
+
+ECOOCEAN on the other hand, which includes non-fish groups such as marine mammals, shows very little change in total consumer biomass. In some cases more biomass with fishing.
+
+## Conclusion
+
+According to these two models, which both produce outputs for total consumer biomass (based on different functional groups, and different fishing forcing) in the ocean the largest fraction of removal can be very different. I think Ray is drawing conclusions from a model that is relative insensitive to the effects of fishing.
+
+## Next steps
+
+What would be the most comparable way to calculate ecosystem disturbance - should it be only for the fish or the wider ecosystem ?
+
+Another idea is that while we would not use these models directly for the metrics we could demonstrate the use the BOATS model inputs for netpp and outputs for catch (and scale to max grid cell) to compare our original published metric for the disturbance with this one, assuming they are both derived from the same underlying "true" ecosystem.
+
+This could be a way to simulation test our and other methods for calculating disturbance?
