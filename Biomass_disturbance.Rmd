@@ -3,7 +3,7 @@ title: "Ecosystem disturbance: Mapping biomass removal using FishMIP models"
 author: "Julia Blanchard"
 date: "5/06/2023"
 output:
-  html_document:
+  github_document:
     code_folding: hide
 ---
 
