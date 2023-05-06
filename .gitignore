@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.csv
+*.nc
+
+boats_gfdl-esm4_nobasd_historical_histsoc_default_tc_global_monthly_1950_2014.nc

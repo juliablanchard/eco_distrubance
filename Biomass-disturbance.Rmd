@@ -185,7 +185,7 @@ tc<-subset(tc,601:780)
 tc<-mean(tc)
 
 #replace missing values with 0
-tc[tc >= 1e20]<-0
+tc[tc == 9.96921e+36]<-0
 plot(tc)
 
 c_npp<-tc/intpp
@@ -208,6 +208,6 @@ According to these two models, which both produce outputs for total consumer bio
 
 What would be the most comparable way to calculate ecosystem disturbance - should it be only for the fish or the wider ecosystem ?
 
-While we would not use these models directly for the metrics we could demonstrate the use the BOATS model inputs for netpp and outputs for catch (and scale to max grid cell) to compare our original published metric for the disturbance with this one, assuming they are both derived from the same underlying "true" ecosystem.
+Another idea is that while we would not use these models directly for the metrics we could demonstrate the use the BOATS model inputs for netpp and outputs for catch (and scale to max grid cell) to compare our original published metric for the disturbance with this one, assuming they are both derived from the same underlying "true" ecosystem.
 
 This could be a way to simulation test our and other methods for calculating disturbance?
